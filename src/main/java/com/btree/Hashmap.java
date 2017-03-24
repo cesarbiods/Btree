@@ -4,18 +4,20 @@ package com.btree;
  * Created by cesar on 3/5/17.
  */
 public class Hashmap {
-    int startingSize = 8;
+    int startingSize = 30;
     Entry[] tab = new Entry[startingSize];
     int count = 0;
+    //RAF r;
+
     static class Entry {
         final String key;
-        Pokemon value;
+        String json;
         Entry next;
         int hash;
 
-        Entry(String k, Pokemon v, Entry n, int h) {
+        Entry(String k, String j, Entry n, int h) {
             key = k;
-            value = v;
+            json = j;
             next = n;
             hash = h;
         }
@@ -58,40 +60,20 @@ public class Hashmap {
      * @param  poke  a unique key that is mapped to a specific object
      */
 
-    public void add(String key, Pokemon poke) {
+    public void add(String key, String json) {
         int h = key.hashCode();
         Entry[] t = tab;
         int i = h & (tab.length) - 1;
 
         for (Entry e = t[i]; e != null; e = e.next) {
             if (e.hash == h && key.equals(e.key)) {
-                e.value = poke;
+                e.json = json;
+                //r.writeToFile();
                 return;
             }
         }
 
-        Entry p = new Entry(key, poke, t[i], h);
-        t[i] = p;
-        int n = t.length;
-        int c = ++count;
-        double mostlyFull = 0.75;
-        if (c/t.length < mostlyFull) {
-            return;
-        }
-
-        int newN = n << 1;
-        Entry [] newTab = new Entry[newN];
-
-        for (int y = 0; y < n; y++) {
-            Entry e;
-            while ((e = t[y]) != null) {
-                t[y] = e.next;
-                int x = e.hash & (newN - 1);
-                e.next = newTab[x];
-                newTab[x] = e;
-            }
-            tab = newTab;
-        }
+        //check if full and evict
     }
 
     /**
@@ -136,14 +118,14 @@ public class Hashmap {
      * @return      a Pokemon object mapped to the supplied key
      */
 
-    public Pokemon get(String key) {
+    public String get(String key) {
         int h = key.hashCode();
         Entry[] t = tab;
         int i = h & (t.length - 1);
-        Pokemon found = null;
+        String found = "";
         for (Entry e = t[i]; e != null; e = e.next) {
             if (e.hash == h && key.equals(e.key)) {
-                found = e.value;
+                found = e.json;
             }
         }
         return found;

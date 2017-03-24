@@ -22,7 +22,7 @@ public class Main {
          * the Hashmap at the start.
          */
 
-        int dexMax = 50;
+        int dexMax = 3;
         for (int i = 1; i <= dexMax; i++) {
             String purl = url.concat(Integer.toString(i));
             String output  = cr.getUrlContents(purl);
