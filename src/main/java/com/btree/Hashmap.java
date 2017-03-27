@@ -7,7 +7,7 @@ public class Hashmap {
     int startingSize = 30;
     Entry[] tab = new Entry[startingSize];
     int count = 0;
-    //RAF r;
+    RAF r;
 
     static class Entry {
         final String key;

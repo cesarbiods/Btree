@@ -14,15 +14,15 @@ public class RAF {
     public RAF() throws FileNotFoundException {
     }
 
-    public byte[] readFromFile(int position, int size) throws IOException {
-        raf.seek(position);
+    public byte[] readFromFile(int size) throws IOException {
+        raf.s
         byte[] bytes = new byte[size];
         raf.read(bytes);
         raf.close();
         return bytes;
     }
 
-    public void writeToFile(String data, int position) throws IOException {
+    public void writeToFile(String data) throws IOException {
         raf.seek(position);
         raf.write(data.getBytes());
         raf.close();
