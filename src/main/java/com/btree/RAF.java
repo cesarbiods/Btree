@@ -15,16 +15,46 @@ public class RAF {
     }
 
     public byte[] readFromFile(int size) throws IOException {
-        raf.s
         byte[] bytes = new byte[size];
         raf.read(bytes);
         raf.close();
         return bytes;
     }
 
-    public void writeToFile(String data) throws IOException {
+    public long treeWrite(Tree.Node data, long position) throws IOException {
         raf.seek(position);
-        raf.write(data.getBytes());
+        for (int i = 0; i < data.key.length; i ++) {
+            raf.writeInt(data.key[i]);
+        }
+        for (int i = 0; i < data.ps.length; i++) {
+            raf.writeLong(data.ps[i]);
+        }
+        raf.writeInt(data.nKeys);
+        raf.writeBoolean(data.isLeaf);
+        raf.writeBoolean(data.isRoot);
+        for (int i = 0; i < data.pokes.length; i++) {
+            pokemonWrite(data.pokes[i]);
+        }
+
+        long temp = raf.getFilePointer();
         raf.close();
+        return temp;
+    }
+
+    public void pokemonWrite(Pokemon mon) throws IOException {
+        int nMax = 12;
+        int tMax = 17;
+        String pName = "";
+        String pType = "";
+        for (int i = 0; i < (nMax - mon.getName().length()); i++) {
+            pName = mon.getName() + " ";
+        }
+        raf.writeUTF(pName);
+        for (int i = 0; i < (tMax - mon.getName().length()); i++) {
+            pType = mon.getTypes() + " ";
+        }
+        raf.writeUTF(pType);
+        raf.writeInt(mon.getHeight());
+        raf.writeInt(mon.getWeight());
     }
 }

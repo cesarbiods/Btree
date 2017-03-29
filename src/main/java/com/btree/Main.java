@@ -9,6 +9,11 @@ import com.google.gson.GsonBuilder;
 public class Main {
 
     public static void main(String[] args) {
+        Tree t = new Tree();
+        t.insert(1);
+        t.insert(2);
+        t.insert(3);
+
         Hashmap hashmap = new Hashmap();
         connectionReader cr = new connectionReader();
         String url = "https://pokeapi.co/api/v2/pokemon/";
@@ -22,13 +27,13 @@ public class Main {
          * the Hashmap at the start.
          */
 
-        int dexMax = 3;
-        for (int i = 1; i <= dexMax; i++) {
-            String purl = url.concat(Integer.toString(i));
-            String output  = cr.getUrlContents(purl);
-            Pokemon poke = gson.fromJson(output, Pokemon.class);
-            hashmap.add(Integer.toString(i), poke);
-        }
-        System.out.println("Success!");
+//        int dexMax = 3;
+//        for (int i = 1; i <= dexMax; i++) {
+//            String purl = url.concat(Integer.toString(i));
+//            String output  = cr.getUrlContents(purl);
+//            Pokemon poke = gson.fromJson(output, Pokemon.class);
+//            hashmap.add(Integer.toString(i), poke);
+//        }
+//        System.out.println("Success!");
     }
 }
