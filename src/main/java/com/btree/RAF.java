@@ -3,22 +3,43 @@ package com.btree;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by cesar on 3/5/17.
  */
 public class RAF {
-    String fileName = "randomaccessfile.txt";
-    RandomAccessFile raf = new RandomAccessFile(fileName, "rw");
+    String fileName = "";
+    RandomAccessFile raf;
 
-    public RAF() throws FileNotFoundException {
+    public RAF(String name) throws FileNotFoundException {
+        fileName = name;
+        raf = new RandomAccessFile(fileName, "rw");
     }
 
-    public byte[] readFromFile(int size) throws IOException {
-        byte[] bytes = new byte[size];
-        raf.read(bytes);
-        raf.close();
-        return bytes;
+    public Tree.Node treeRead(Tree.Node n,long position) throws IOException {
+        raf.seek(position);
+        for (int i = 0; i < n.key.length; i ++) {
+            int temp = raf.readInt();
+            //if (temp != 0) {
+                n.key[i] = temp;
+            //}
+        }
+        for (int i = 0; i < n.ps.length; i++) {
+            long temp = raf.readLong();
+            if (temp != 0L) {
+                n.ps[i] = temp;
+            }
+        }
+        //Recreate array of children
+        n.nKeys = raf.readInt();
+        n.isLeaf = raf.readBoolean();
+        n.isRoot = raf.readBoolean();
+        for (int i = 0; i < n.pokes.length; i++) {
+            //n.pokes[i] = pokemonRead(new Pokemon());
+        }
+        return n;
     }
 
     public long treeWrite(Tree.Node data, long position) throws IOException {
@@ -33,7 +54,9 @@ public class RAF {
         raf.writeBoolean(data.isLeaf);
         raf.writeBoolean(data.isRoot);
         for (int i = 0; i < data.pokes.length; i++) {
-            pokemonWrite(data.pokes[i]);
+            Pokemon derp = new Pokemon();
+            //pokemonWrite(derp);
+            //data.pokes[i] = derp;
         }
 
         long temp = raf.getFilePointer();
@@ -43,18 +66,58 @@ public class RAF {
 
     public void pokemonWrite(Pokemon mon) throws IOException {
         int nMax = 12;
-        int tMax = 17;
+        int tMax = 8;
         String pName = "";
         String pType = "";
+
         for (int i = 0; i < (nMax - mon.getName().length()); i++) {
             pName = mon.getName() + " ";
         }
         raf.writeUTF(pName);
-        for (int i = 0; i < (tMax - mon.getName().length()); i++) {
-            pType = mon.getTypes() + " ";
+        if (mon.types.size() == 2) {
+            for (ComplexType c: mon.types) {
+                for (int i = 0; i < (tMax - c.getType().getName().length()); i++) {
+                    pType = c.getType().getName() + " ";
+                }
+                raf.writeUTF(pType);
+            }
+        } else {
+            for (ComplexType c: mon.types) {
+                for (int i = 0; i < (tMax - c.getType().getName().length()); i++) {
+                    pType = c.getType().getName() + " ";
+                }
+                raf.writeUTF(pType);
+            }
+            raf.writeUTF(pType);
         }
-        raf.writeUTF(pType);
         raf.writeInt(mon.getHeight());
         raf.writeInt(mon.getWeight());
+    }
+
+    public Pokemon pokemonRead(Pokemon mon) throws IOException {
+        mon.setName(raf.readUTF().trim());
+        String type1 = raf.readUTF();
+        String type2 = raf.readUTF();
+        if (type1.equals(type2)) {
+            Type mono = new Type();
+            mono.setName(type1);
+            ComplexType a = new ComplexType();
+            a.setType(mono);
+            mon.setType((List<ComplexType>) a);
+        } else {
+            Type a = new Type();
+            Type b = new Type();
+            a.setName(type1);
+            b.setName(type2);
+            ComplexType x = new ComplexType();
+            ComplexType y = new ComplexType();
+            x.setType(a);
+            y.setType(b);
+            List<ComplexType> types = Arrays.asList(x,y);
+            mon.setType(types);
+        }
+        mon.setHeight(raf.readInt());
+        mon.setWeight(raf.readInt());
+        return mon;
     }
 }

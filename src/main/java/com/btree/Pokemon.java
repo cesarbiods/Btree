@@ -24,6 +24,7 @@ public class Pokemon {
         height = h;
         weight = w;
     }
+    public Pokemon() {}
 
     public String getName() {
         return name;

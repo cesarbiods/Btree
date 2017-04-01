@@ -12,16 +12,7 @@ package com.btree;
  */
 
 public class Type {
-    private String url;
     private String name;
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUrl() {
-        return url;
-    }
 
     public String getName() {
         return name;

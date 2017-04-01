@@ -3,22 +3,27 @@ package com.btree;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
+
 /**
  * Created by cesar on 3/5/17.
  */
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Tree t = new Tree();
         t.insert(1);
         t.insert(2);
         t.insert(3);
+        t.search(t.root, 1);
 
-        Hashmap hashmap = new Hashmap();
-        connectionReader cr = new connectionReader();
-        String url = "https://pokeapi.co/api/v2/pokemon/";
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        System.out.println("Loading the pokedex...");
+
+
+//        Hashmap hashmap = new Hashmap();
+//        connectionReader cr = new connectionReader();
+//        String url = "https://pokeapi.co/api/v2/pokemon/";
+//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//        System.out.println("Loading the pokedex...");
 
         /**
          * Var dexMax

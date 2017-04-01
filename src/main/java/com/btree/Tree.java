@@ -1,5 +1,6 @@
 package com.btree;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -9,13 +10,16 @@ public class Tree {
     static int order = 32;
     static int t = order / 2;
     Node root;
+    long nextPos = 0;
+    RAF treeRaf = new RAF("treeRaf.txt");
 
-    public Tree() {
-        root = new Node();
+    public Tree() throws IOException {
+        root = allocate();
         root.isRoot = true;
         root.isLeaf = true;
         root.nKeys = 0;
-        //raf write
+        root.rafPosition = nextPos;
+        nextPos = treeRaf.treeWrite(root, root.rafPosition);
     }
 
     static class Node {
@@ -27,17 +31,19 @@ public class Tree {
         boolean isRoot;
         Pokemon pokes[];
         long rafPosition;
+    }
 
-        Node() {
-            key = new int[order - 1];
-            child = new Node[order];
-            ps = new long[order];
-            nKeys = 0;
-            isLeaf = false;
-            isRoot = false;
-            pokes = new Pokemon[order - 1];
-            ps = new long[order];
-        }
+    public Node allocate() {
+        Node n = new Node();
+        n.key = new int[order - 1];
+        n.child = new Node[order];
+        n.ps = new long[order];
+        n.nKeys = 0;
+        n.isLeaf = false;
+        n.isRoot = false;
+        n.pokes = new Pokemon[order - 1];
+        n.rafPosition = nextPos;
+        return n;
     }
 
     public Optional<Pokemon> search(Node n, int key) {
@@ -51,13 +57,13 @@ public class Tree {
         } else if (n.isLeaf) {
             return Optional.empty();
         } else {
-            //raf write
+            //raf read(n.child[i-1])
             return search(n.child[i - 1], key);
         }
     }
 
-    public void splitChild(Node n, int cIndex) {
-        Node extra = new Node();
+    public void splitChild(Node n, int cIndex) throws IOException {
+        Node extra = allocate();
         Node original = n.child[cIndex - 1];
         extra.isLeaf = original.isLeaf;
         extra.nKeys = t - 1;
@@ -80,19 +86,20 @@ public class Tree {
         }
         n.key[cIndex - 1] = original.key[t - 1];
         n.nKeys = n.nKeys + 1;
-        //raf write n
-        //rad write original
-        //raf write extra
+        treeRaf.treeWrite(original, original.rafPosition);
+        nextPos = treeRaf.treeWrite(extra, extra.rafPosition);
+        treeRaf.treeWrite(n, n.rafPosition);
     }
 
-    public void insert(int key) {
+    public void insert(int key) throws IOException {
         Node r = root;
         if (r.nKeys == (2*t - 1)) {
-            Node s = new Node();
+            Node s = allocate();
             root = s;
             s.isLeaf = false;
             s.nKeys = 0;
             s.child[1 - 1] = r;
+            nextPos = treeRaf.treeWrite(s, s.rafPosition);
             splitChild(s, 1);
             insertNonfull(s, key);
         } else {
@@ -100,7 +107,7 @@ public class Tree {
         }
     }
 
-    public void insertNonfull(Node x, int key) {
+    public void insertNonfull(Node x, int key) throws IOException {
         int i = x.nKeys;
         if (x.isLeaf) {
             while (i >= 1 && key < x.key[i - 1]) {
@@ -109,13 +116,13 @@ public class Tree {
             }
             x.key[i + 1 - 1] = key;
             x.nKeys++;
-            //raf write(x)
+            treeRaf.treeWrite(x, x.rafPosition);
         } else {
             while (i >=1 && key < x.key[i - 1]) {
                 i--;
             }
             i++;
-            //raf read(x.child[i])
+            //raf read(x.child[i - 1])
             if (x.child[i - 1].nKeys == (2*t - 1)) {
                 splitChild(x, i);
                 if (key > x.key[i - 1]) {
