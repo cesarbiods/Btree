@@ -18,7 +18,13 @@ public class RAF {
         raf = new RandomAccessFile(fileName, "rw");
     }
 
-    public Tree.Node treeRead(Tree.Node n,long position) throws IOException {
+    public Tree.Node treeRead(int order,long position) throws IOException {
+        Tree.Node n = new Tree.Node();
+        n.key = new int[order - 1];
+        n.child = new Tree.Node[order];
+        n.ps = new long[order];
+        n.pokes = new Pokemon[order - 1];
+
         raf.seek(position);
         for (int i = 0; i < n.key.length; i ++) {
             int temp = raf.readInt();
@@ -32,10 +38,15 @@ public class RAF {
                 n.ps[i] = temp;
             }
         }
-        //Recreate array of children
         n.nKeys = raf.readInt();
         n.isLeaf = raf.readBoolean();
-        n.isRoot = raf.readBoolean();
+        if (!n.isLeaf) {
+            for (int i = 0; i < n.child.length; i++) {
+                for (int j = 0; j < n.ps.length; j++) {
+                    n.child[i] = treeRead(order, n.ps[j]);
+                }
+            }
+        }
         for (int i = 0; i < n.pokes.length; i++) {
             //n.pokes[i] = pokemonRead(new Pokemon());
         }
@@ -52,7 +63,6 @@ public class RAF {
         }
         raf.writeInt(data.nKeys);
         raf.writeBoolean(data.isLeaf);
-        raf.writeBoolean(data.isRoot);
         for (int i = 0; i < data.pokes.length; i++) {
             Pokemon derp = new Pokemon();
             //pokemonWrite(derp);
@@ -60,7 +70,6 @@ public class RAF {
         }
 
         long temp = raf.getFilePointer();
-        raf.close();
         return temp;
     }
 

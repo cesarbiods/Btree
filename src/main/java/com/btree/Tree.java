@@ -7,7 +7,7 @@ import java.util.Optional;
  * Created by cesar on 3/23/17.
  */
 public class Tree {
-    static int order = 32;
+    static int order = 3;
     static int t = order / 2;
     Node root;
     long nextPos = 0;
@@ -15,7 +15,6 @@ public class Tree {
 
     public Tree() throws IOException {
         root = allocate();
-        root.isRoot = true;
         root.isLeaf = true;
         root.nKeys = 0;
         root.rafPosition = nextPos;
@@ -28,7 +27,6 @@ public class Tree {
         long ps[];
         int nKeys;
         boolean isLeaf;
-        boolean isRoot;
         Pokemon pokes[];
         long rafPosition;
     }
@@ -40,13 +38,12 @@ public class Tree {
         n.ps = new long[order];
         n.nKeys = 0;
         n.isLeaf = false;
-        n.isRoot = false;
         n.pokes = new Pokemon[order - 1];
         n.rafPosition = nextPos;
         return n;
     }
 
-    public Optional<Pokemon> search(Node n, int key) {
+    public Optional<Pokemon> search(Node n, int key) throws IOException {
         int i = 1;
         while (i <= n.nKeys && key > n.key[i - 1]) {
             i = i++;
@@ -57,7 +54,7 @@ public class Tree {
         } else if (n.isLeaf) {
             return Optional.empty();
         } else {
-            //raf read(n.child[i-1])
+            n.child[i-1] = treeRaf.treeRead(order, n.ps[i-1]);
             return search(n.child[i - 1], key);
         }
     }
@@ -91,9 +88,18 @@ public class Tree {
         treeRaf.treeWrite(n, n.rafPosition);
     }
 
+    public boolean isFull(Node n) {
+        for (int i = 0; i < n.key.length; i++) {
+            if (n.key[i] == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void insert(int key) throws IOException {
         Node r = root;
-        if (r.nKeys == (2*t - 1)) {
+        if (isFull(r)) {
             Node s = allocate();
             root = s;
             s.isLeaf = false;
@@ -122,8 +128,8 @@ public class Tree {
                 i--;
             }
             i++;
-            //raf read(x.child[i - 1])
-            if (x.child[i - 1].nKeys == (2*t - 1)) {
+            x.child[i - 1] = treeRaf.treeRead(order, x.ps[i - 1]);
+            if (isFull(x.child[i - 1])) {
                 splitChild(x, i);
                 if (key > x.key[i - 1]) {
                     i++;
