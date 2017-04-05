@@ -12,6 +12,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Tree t = new Tree();
+        t.insert(15);
         t.insert(23);
         t.insert(42);
         t.insert(13);
@@ -22,7 +23,18 @@ public class Main {
         t.insert(1);
         t.insert(35);
         t.insert(6);
-        t.search(t.root, 1);
+        t.insert(99);
+        t.insert(38);
+        t.insert(4);
+        t.insert(88);
+        t.insert(90);
+        t.insert(91);
+        t.insert(2);
+        t.insert(3);
+        t.insert(5);
+        t.insert(21);
+        System.out.println("Hi");
+        //t.search(t.root, 1);
 
 
 

@@ -34,22 +34,19 @@ public class RAF {
         }
         for (int i = 0; i < n.ps.length; i++) {
             long temp = raf.readLong();
-            if (temp != 0L) {
                 n.ps[i] = temp;
-            }
         }
         n.nKeys = raf.readInt();
         n.isLeaf = raf.readBoolean();
         if (!n.isLeaf) {
-            for (int i = 0; i < n.child.length; i++) {
-                for (int j = 0; j < n.ps.length; j++) {
-                    n.child[i] = treeRead(order, n.ps[j]);
-                }
+            for (int i = 0; i < n.nKeys + 1; i++) {
+                n.child[i] = treeRead(order, n.ps[i]);
             }
         }
         for (int i = 0; i < n.pokes.length; i++) {
             //n.pokes[i] = pokemonRead(new Pokemon());
         }
+        n.rafPosition = position;
         return n;
     }
 
@@ -68,6 +65,7 @@ public class RAF {
             //pokemonWrite(derp);
             //data.pokes[i] = derp;
         }
+        raf.writeLong(position);
 
         long temp = raf.getFilePointer();
         return temp;

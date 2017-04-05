@@ -7,11 +7,12 @@ import java.util.Optional;
  * Created by cesar on 3/23/17.
  */
 public class Tree {
-    static int order = 3;
+    static int order = 4;
     static int t = order / 2;
     Node root;
     long nextPos = 0;
     RAF treeRaf = new RAF("treeRaf.txt");
+    RAF pokeRaf = new RAF("pokeRaf.txt");
 
     public Tree() throws IOException {
         root = allocate();
@@ -59,33 +60,41 @@ public class Tree {
         }
     }
 
-    public void splitChild(Node n, int cIndex) throws IOException {
-        Node extra = allocate();
-        Node original = n.child[cIndex - 1];
-        extra.isLeaf = original.isLeaf;
-        extra.nKeys = t - 1;
+    public void splitChild(Node top, int cIndex) throws IOException {
+        Node right = allocate();
+        Node left = top.child[cIndex - 1];
+        right.isLeaf = left.isLeaf;
+        right.nKeys = t - 1;
 
-        for (int j = 1; j < t - 1; j++) {
-            extra.key[j - 1] = original.key[j + t - 1];
+        for (int j = 1; j <= t - 1; j++) { //moves the necessary keys from left to right
+            right.key[j - 1] = left.key[j + t - 1];
+            left.key[j + t - 1] = 0;
         }
-        if (!original.isLeaf) {
-            for (int j = 1; j < t; j++) {
-                extra.child[j - 1] = original.child[j + t - 1];
+        if (!left.isLeaf) {
+            for (int j = 1; j <= t; j++) {
+                right.child[j - 1] = left.child[j + t - 1]; //should reassign necessary children from left to right like above
+                right.ps[j - 1] = left.child[j + t - 1].rafPosition;
+                left.child[j + t - 1] = null; // Remove child from left
+                left.ps[j + t - 1] = 0;
             }
         }
-        original.nKeys = t - 1;
-        for (int j = n.nKeys + 1; j > cIndex + 1; j--) {
-            n.child[j + 1 - 1] = n.child[j - 1];
+        left.nKeys = t - 1;
+        for (int j = top.nKeys + 1; j >= cIndex + 1; j--) {
+            top.child[j + 1 - 1] = top.child[j - 1];
+            top.ps[j + 1 - 1] = top.child[j - 1].rafPosition;
         }
-        n.child[cIndex + 1 - 1] = extra;
-        for (int j = n.nKeys; j > cIndex; j--) {
-            n.key[j + 1 - 1] = n.key[j - 1];
+        top.child[cIndex + 1 - 1] = right; //connects right and top so it's a child
+        top.ps[cIndex + 1 - 1] = right.rafPosition;
+        for (int j = top.nKeys; j >= cIndex; j--) {
+            top.key[j + 1 - 1] = top.key[j - 1];
+            top.key[j - 1] = 0; //weird
         }
-        n.key[cIndex - 1] = original.key[t - 1];
-        n.nKeys = n.nKeys + 1;
-        treeRaf.treeWrite(original, original.rafPosition);
-        nextPos = treeRaf.treeWrite(extra, extra.rafPosition);
-        treeRaf.treeWrite(n, n.rafPosition);
+        top.key[cIndex - 1] = left.key[t - 1];
+        left.key[t - 1] = 0;
+        top.nKeys = top.nKeys + 1;
+        treeRaf.treeWrite(left, left.rafPosition);
+        nextPos = treeRaf.treeWrite(right, right.rafPosition);
+        treeRaf.treeWrite(top, top.rafPosition);
     }
 
     public boolean isFull(Node n) {
@@ -105,6 +114,7 @@ public class Tree {
             s.isLeaf = false;
             s.nKeys = 0;
             s.child[1 - 1] = r;
+            s.ps[1 -1] = r.rafPosition;
             nextPos = treeRaf.treeWrite(s, s.rafPosition);
             splitChild(s, 1);
             insertNonfull(s, key);
