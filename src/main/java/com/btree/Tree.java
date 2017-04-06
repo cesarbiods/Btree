@@ -10,16 +10,16 @@ public class Tree {
     static int order = 4;
     static int t = order / 2;
     Node root;
-    long nextPos = 0;
-    RAF treeRaf = new RAF("treeRaf.txt");
-    RAF pokeRaf = new RAF("pokeRaf.txt");
+    long nNextPos = 0;
+    long pNextPos = 0;
+    TreeRAF treeRaf = new TreeRAF();
 
     public Tree() throws IOException {
         root = allocate();
         root.isLeaf = true;
         root.nKeys = 0;
-        root.rafPosition = nextPos;
-        nextPos = treeRaf.treeWrite(root, root.rafPosition);
+        root.rafPosition = nNextPos;
+        nNextPos = treeRaf.treeWrite(root, root.rafPosition);
     }
 
     static class Node {
@@ -29,6 +29,7 @@ public class Tree {
         int nKeys;
         boolean isLeaf;
         Pokemon pokes[];
+        long pps[];
         long rafPosition;
     }
 
@@ -40,7 +41,8 @@ public class Tree {
         n.nKeys = 0;
         n.isLeaf = false;
         n.pokes = new Pokemon[order - 1];
-        n.rafPosition = nextPos;
+        n.pps = new long[order - 1];
+        n.rafPosition = nNextPos;
         return n;
     }
 
@@ -55,7 +57,10 @@ public class Tree {
         } else if (n.isLeaf) {
             return Optional.empty();
         } else {
-            n.child[i-1] = treeRaf.treeRead(order, n.ps[i-1]);
+            n.child[i - 1] = treeRaf.treeRead(order, n.ps[i - 1]);
+            for (int j = 0; j < n.child[i - 1].nKeys; j++) {
+                n.child[i - 1].pokes[j] = treeRaf.pokemonRead(n.child[i - 1].pps[j]);
+            }
             return search(n.child[i - 1], key);
         }
     }
@@ -69,6 +74,10 @@ public class Tree {
         for (int j = 1; j <= t - 1; j++) { //moves the necessary keys from left to right
             right.key[j - 1] = left.key[j + t - 1];
             left.key[j + t - 1] = 0;
+            right.pokes[j - 1] = left.pokes[j + t - 1];
+            right.pps[j - 1] = left.pps[j + t- 1];
+            left.pokes[j + t - 1] = null;
+            left.pps[j + t - 1] = 0;
         }
         if (!left.isLeaf) {
             for (int j = 1; j <= t; j++) {
@@ -88,12 +97,16 @@ public class Tree {
         for (int j = top.nKeys; j >= cIndex; j--) {
             top.key[j + 1 - 1] = top.key[j - 1];
             top.key[j - 1] = 0; //weird
+            top.pokes[j + 1 - 1] = top.pokes[j - 1];
+            top.pokes[j - 1] = null;
         }
         top.key[cIndex - 1] = left.key[t - 1];
+        top.pokes[cIndex - 1] = left.pokes[t - 1];
         left.key[t - 1] = 0;
+        left.pokes[t - 1] = null;
         top.nKeys = top.nKeys + 1;
         treeRaf.treeWrite(left, left.rafPosition);
-        nextPos = treeRaf.treeWrite(right, right.rafPosition);
+        nNextPos = treeRaf.treeWrite(right, right.rafPosition);
         treeRaf.treeWrite(top, top.rafPosition);
     }
 
@@ -106,7 +119,7 @@ public class Tree {
         return true;
     }
 
-    public void insert(int key) throws IOException {
+    public void insert(int key, Pokemon poke) throws IOException {
         Node r = root;
         if (isFull(r)) {
             Node s = allocate();
@@ -115,15 +128,15 @@ public class Tree {
             s.nKeys = 0;
             s.child[1 - 1] = r;
             s.ps[1 -1] = r.rafPosition;
-            nextPos = treeRaf.treeWrite(s, s.rafPosition);
+            nNextPos = treeRaf.treeWrite(s, s.rafPosition);
             splitChild(s, 1);
-            insertNonfull(s, key);
+            insertNonfull(s, key, poke);
         } else {
-            insertNonfull(r, key);
+            insertNonfull(r, key, poke);
         }
     }
 
-    public void insertNonfull(Node x, int key) throws IOException {
+    public void insertNonfull(Node x, int key, Pokemon poke) throws IOException {
         int i = x.nKeys;
         if (x.isLeaf) {
             while (i >= 1 && key < x.key[i - 1]) {
@@ -131,21 +144,28 @@ public class Tree {
                 i--;
             }
             x.key[i + 1 - 1] = key;
+            x.pokes[i + 1 - 1] = poke;
             x.nKeys++;
+            poke.setRafPosition(pNextPos);
+            x.pps[i + 1 - 1] = poke.getRafPosition();
             treeRaf.treeWrite(x, x.rafPosition);
+            pNextPos = treeRaf.pokemonWrite(poke, poke.getRafPosition());
         } else {
             while (i >=1 && key < x.key[i - 1]) {
                 i--;
             }
             i++;
             x.child[i - 1] = treeRaf.treeRead(order, x.ps[i - 1]);
+            for (int j = 0; j < x.child[i - 1].nKeys; j++) {
+                x.child[i - 1].pokes[j] = treeRaf.pokemonRead(x.child[i - 1].pps[j]);
+            }
             if (isFull(x.child[i - 1])) {
                 splitChild(x, i);
                 if (key > x.key[i - 1]) {
                     i++;
                 }
             }
-            insertNonfull(x.child[i - 1], key);
+            insertNonfull(x.child[i - 1], key, poke);
         }
     }
 }

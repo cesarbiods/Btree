@@ -7,17 +7,16 @@ public class Hashmap {
     int startingSize = 30;
     Entry[] tab = new Entry[startingSize];
     int count = 0;
-    RAF r;
 
     static class Entry {
-        final String key;
-        String json;
+        final String url;
+        String path;
         Entry next;
         int hash;
 
         Entry(String k, String j, Entry n, int h) {
-            key = k;
-            json = j;
+            url = k;
+            path = j;
             next = n;
             hash = h;
         }
@@ -27,19 +26,19 @@ public class Hashmap {
      * Tests whether a given object is contained in the Hashmap
      * <p>
      * The method checks every Entry object in the Hashmap and its next
-     * value until it finds the object mapped to the key. If next is found
+     * value until it finds the object mapped to the url. If next is found
      * to be null then the object was not found.
      *
-     * @param  key  a unique key that is mapped to a specific object
+     * @param  url  a unique url that is mapped to a specific object
      * @return      a boolean signifying whether the object was found
      */
 
-    public boolean contains(String key) {
-        int h = key.hashCode();
+    public boolean contains(String url) {
+        int h = url.hashCode();
         Entry[] t = tab;
         int i = h & (t.length - 1);
         for (Entry e = t[i]; e != null; e = e.next) {
-            if (e.hash == h && key.equals(e.key)) {
+            if (e.hash == h && url.equals(e.url)) {
                 return true;
             }
         }
@@ -47,7 +46,7 @@ public class Hashmap {
     }
 
     /**
-     * Adds a pokemon and its key to the Hashmap, resizes if needed
+     * Adds a pokemon and its url to the Hashmap, resizes if needed
      * <p>
      * The method checks every Entry object in the Hashmap and its next
      * value until it finds a null spot to place the pokemon object.
@@ -56,18 +55,18 @@ public class Hashmap {
      * If this is found to be the case then a new Hashmap is created of twice
      * and all the Entry objects are moved over to the new Hashmap
      *
-     * @param  key  a unique key that is mapped to a specific object
-     * @param  poke  a unique key that is mapped to a specific object
+     * @param  url  a unique url that is mapped to a specific object
+     * @param  path  a unique url that is mapped to a specific object
      */
 
-    public void add(String key, String json) {
-        int h = key.hashCode();
+    public void add(String url, String path) {
+        int h = url.hashCode();
         Entry[] t = tab;
         int i = h & (tab.length) - 1;
 
         for (Entry e = t[i]; e != null; e = e.next) {
-            if (e.hash == h && key.equals(e.key)) {
-                e.json = json;
+            if (e.hash == h && url.equals(e.url)) {
+                e.path = path;
                 //r.writeToFile();
                 return;
             }
@@ -77,23 +76,23 @@ public class Hashmap {
     }
 
     /**
-     * Removes a pokemon and its key from the Hashmap
+     * Removes a pokemon and its url from the Hashmap
      * <p>
      * The method checks every Entry object in the Hashmap until it finds it
      * and removes it from the Hashmap. It also adjusts next values of the neighbors
      * after a remove.
      *
-     * @param  key  a unique key that is mapped to a specific object
+     * @param  url  a unique url that is mapped to a specific object
      */
 
-    public void remove(String key) {
-        int h = key.hashCode();
+    public void remove(String url) {
+        int h = url.hashCode();
         Entry[] t = tab;
         int i = h & (t.length - 1);
         Entry pred = null;
         Entry p = t[i];
         while (p != null) {
-            if (p.hash == h && key.equals(p.key)) {
+            if (p.hash == h && url.equals(p.url)) {
                 if (pred == null) {
                     t[i] = p.next;
                 } else {
@@ -108,24 +107,24 @@ public class Hashmap {
     }
 
     /**
-     * Retrieves the pokemon object mapped to the specified key
+     * Retrieves the pokemon object mapped to the specified url
      * <p>
      * The method checks every Entry object and its next
-     * values in the Hashmap until it finds the Pokemon mapped to the key.
+     * values in the Hashmap until it finds the Pokemon mapped to the url.
      * It then returns that Pokemon object.
      *
-     * @param  key  a unique key that is mapped to a specific object
-     * @return      a Pokemon object mapped to the supplied key
+     * @param  url  a unique url that is mapped to a specific object
+     * @return      a Pokemon object mapped to the supplied url
      */
 
-    public String get(String key) {
-        int h = key.hashCode();
+    public String get(String url) {
+        int h = url.hashCode();
         Entry[] t = tab;
         int i = h & (t.length - 1);
         String found = "";
         for (Entry e = t[i]; e != null; e = e.next) {
-            if (e.hash == h && key.equals(e.key)) {
-                found = e.json;
+            if (e.hash == h && url.equals(e.url)) {
+                found = e.path;
             }
         }
         return found;

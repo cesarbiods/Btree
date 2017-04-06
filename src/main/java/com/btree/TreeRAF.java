@@ -9,13 +9,13 @@ import java.util.List;
 /**
  * Created by cesar on 3/5/17.
  */
-public class RAF {
-    String fileName = "";
-    RandomAccessFile raf;
+public class TreeRAF {
+    RandomAccessFile tRaf;
+    RandomAccessFile pRaf;
 
-    public RAF(String name) throws FileNotFoundException {
-        fileName = name;
-        raf = new RandomAccessFile(fileName, "rw");
+    public TreeRAF() throws FileNotFoundException {
+        tRaf = new RandomAccessFile("treeRaf", "rw");
+        pRaf = new RandomAccessFile("pokeRaf", "rw");
     }
 
     public Tree.Node treeRead(int order,long position) throws IOException {
@@ -24,87 +24,89 @@ public class RAF {
         n.child = new Tree.Node[order];
         n.ps = new long[order];
         n.pokes = new Pokemon[order - 1];
+        n.pps = new long[order - 1];
 
-        raf.seek(position);
+        tRaf.seek(position);
         for (int i = 0; i < n.key.length; i ++) {
-            int temp = raf.readInt();
-            //if (temp != 0) {
-                n.key[i] = temp;
-            //}
+            n.key[i] = tRaf.readInt();
         }
         for (int i = 0; i < n.ps.length; i++) {
-            long temp = raf.readLong();
-                n.ps[i] = temp;
+            n.ps[i] = tRaf.readLong();
         }
-        n.nKeys = raf.readInt();
-        n.isLeaf = raf.readBoolean();
+        n.nKeys = tRaf.readInt();
+        n.isLeaf = tRaf.readBoolean();
+        for (int i = 0; i < n.pps.length; i++) {
+            n.pps[i] = tRaf.readLong();
+        }
+        n.rafPosition = position;
+
         if (!n.isLeaf) {
             for (int i = 0; i < n.nKeys + 1; i++) {
                 n.child[i] = treeRead(order, n.ps[i]);
             }
         }
-        for (int i = 0; i < n.pokes.length; i++) {
-            //n.pokes[i] = pokemonRead(new Pokemon());
-        }
-        n.rafPosition = position;
         return n;
     }
 
     public long treeWrite(Tree.Node data, long position) throws IOException {
-        raf.seek(position);
+        tRaf.seek(position);
         for (int i = 0; i < data.key.length; i ++) {
-            raf.writeInt(data.key[i]);
+            tRaf.writeInt(data.key[i]);
         }
         for (int i = 0; i < data.ps.length; i++) {
-            raf.writeLong(data.ps[i]);
+            tRaf.writeLong(data.ps[i]);
         }
-        raf.writeInt(data.nKeys);
-        raf.writeBoolean(data.isLeaf);
-        for (int i = 0; i < data.pokes.length; i++) {
-            Pokemon derp = new Pokemon();
-            //pokemonWrite(derp);
-            //data.pokes[i] = derp;
+        tRaf.writeInt(data.nKeys);
+        tRaf.writeBoolean(data.isLeaf);
+        for (int i = 0; i < data.pps.length; i++) {
+            tRaf.writeLong(data.pps[i]);
         }
-        raf.writeLong(position);
+        tRaf.writeLong(position);
 
-        long temp = raf.getFilePointer();
-        return temp;
+        return tRaf.getFilePointer();
     }
 
-    public void pokemonWrite(Pokemon mon) throws IOException {
+    public long pokemonWrite(Pokemon mon, long position) throws IOException {
         int nMax = 12;
         int tMax = 8;
         String pName = "";
         String pType = "";
 
+        pRaf.seek(position);
         for (int i = 0; i < (nMax - mon.getName().length()); i++) {
             pName = mon.getName() + " ";
         }
-        raf.writeUTF(pName);
+        pRaf.writeUTF(pName);
         if (mon.types.size() == 2) {
             for (ComplexType c: mon.types) {
                 for (int i = 0; i < (tMax - c.getType().getName().length()); i++) {
                     pType = c.getType().getName() + " ";
                 }
-                raf.writeUTF(pType);
+                pRaf.writeUTF(pType);
             }
         } else {
             for (ComplexType c: mon.types) {
                 for (int i = 0; i < (tMax - c.getType().getName().length()); i++) {
                     pType = c.getType().getName() + " ";
                 }
-                raf.writeUTF(pType);
+                pRaf.writeUTF(pType);
             }
-            raf.writeUTF(pType);
+            pRaf.writeUTF(pType);
         }
-        raf.writeInt(mon.getHeight());
-        raf.writeInt(mon.getWeight());
+        pRaf.writeInt(mon.getHeight());
+        pRaf.writeInt(mon.getWeight());
+        pRaf.writeLong(position);
+
+        return pRaf.getFilePointer();
     }
 
-    public Pokemon pokemonRead(Pokemon mon) throws IOException {
-        mon.setName(raf.readUTF().trim());
-        String type1 = raf.readUTF();
-        String type2 = raf.readUTF();
+    public Pokemon pokemonRead(long position) throws IOException {
+        Pokemon mon = new Pokemon();
+
+        pRaf.seek(position);
+        mon.setName(pRaf.readUTF().trim());
+        String type1 = pRaf.readUTF().trim();
+        String type2 = pRaf.readUTF().trim();
         if (type1.equals(type2)) {
             Type mono = new Type();
             mono.setName(type1);
@@ -123,8 +125,9 @@ public class RAF {
             List<ComplexType> types = Arrays.asList(x,y);
             mon.setType(types);
         }
-        mon.setHeight(raf.readInt());
-        mon.setWeight(raf.readInt());
+        mon.setHeight(pRaf.readInt());
+        mon.setWeight(pRaf.readInt());
+        mon.setRafPosition(position);
         return mon;
     }
 }

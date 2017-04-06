@@ -17,6 +17,7 @@ public class Pokemon {
     public List<ComplexType> types;
     private int height;
     private int weight;
+    private long rafPosition;
 
     public Pokemon(String n, List<ComplexType> t, int h, int w) {
         name = n;
@@ -88,6 +89,14 @@ public class Pokemon {
 
     public void setWeight(int weight) {
         this.weight = weight;
+    }
+
+    public long getRafPosition() {
+        return rafPosition;
+    }
+
+    public void setRafPosition(long rafPosition) {
+        this.rafPosition = rafPosition;
     }
 
     public String toString() {
