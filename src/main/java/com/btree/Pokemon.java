@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * This class describes a Pokemon object to be created from the Pokeapi
- * nd loaded on the Hashmap by dex numbers. Every Pokemon has a name,
+ * nd loaded on the Cache by dex numbers. Every Pokemon has a name,
  * height, weight, and a single or a dual type.
  */
 

@@ -17,8 +17,8 @@ public class Main {
 
 
 
-//        Hashmap hashmap = new Hashmap();
-//        connectionReader cr = new connectionReader();
+//        Cache hashmap = new Cache();
+//        ConnectionReader cr = new ConnectionReader();
 //        String url = "https://pokeapi.co/api/v2/pokemon/";
 //        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 //        System.out.println("Loading the pokedex...");
@@ -27,7 +27,7 @@ public class Main {
          * Var dexMax
          * <p>
          * This variable determines how many Pokemon are loaded onto
-         * the Hashmap at the start.
+         * the Cache at the start.
          */
 
 //        int dexMax = 3;

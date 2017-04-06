@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class connectionReader {
+public class ConnectionReader {
 
     /**
      * Queries a URL and returns it's contents as a JSON String

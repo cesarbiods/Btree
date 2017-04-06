@@ -1,12 +1,19 @@
 package com.btree;
 
+import java.io.FileNotFoundException;
+
 /**
  * Created by cesar on 3/5/17.
  */
-public class Hashmap {
+public class Cache {
     int startingSize = 30;
     Entry[] tab = new Entry[startingSize];
-    int count = 0;
+    //int count = 0;
+    CacheRAF raf = new CacheRAF();
+    int[] counts = new int[startingSize];
+
+    public Cache() throws FileNotFoundException {
+    }
 
     static class Entry {
         final String url;
@@ -23,9 +30,9 @@ public class Hashmap {
     }
 
     /**
-     * Tests whether a given object is contained in the Hashmap
+     * Tests whether a given object is contained in the Cache
      * <p>
-     * The method checks every Entry object in the Hashmap and its next
+     * The method checks every Entry object in the Cache and its next
      * value until it finds the object mapped to the url. If next is found
      * to be null then the object was not found.
      *
@@ -46,14 +53,14 @@ public class Hashmap {
     }
 
     /**
-     * Adds a pokemon and its url to the Hashmap, resizes if needed
+     * Adds a pokemon and its url to the Cache, resizes if needed
      * <p>
-     * The method checks every Entry object in the Hashmap and its next
+     * The method checks every Entry object in the Cache and its next
      * value until it finds a null spot to place the pokemon object.
      * <p>
-     * After an add the methods checks to see if the Hashmap is mostly full.
-     * If this is found to be the case then a new Hashmap is created of twice
-     * and all the Entry objects are moved over to the new Hashmap
+     * After an add the methods checks to see if the Cache is mostly full.
+     * If this is found to be the case then a new Cache is created of twice
+     * and all the Entry objects are moved over to the new Cache
      *
      * @param  url  a unique url that is mapped to a specific object
      * @param  path  a unique url that is mapped to a specific object
@@ -76,10 +83,10 @@ public class Hashmap {
     }
 
     /**
-     * Removes a pokemon and its url from the Hashmap
+     * Removes a pokemon and its url from the Cache
      * <p>
-     * The method checks every Entry object in the Hashmap until it finds it
-     * and removes it from the Hashmap. It also adjusts next values of the neighbors
+     * The method checks every Entry object in the Cache until it finds it
+     * and removes it from the Cache. It also adjusts next values of the neighbors
      * after a remove.
      *
      * @param  url  a unique url that is mapped to a specific object
@@ -98,7 +105,7 @@ public class Hashmap {
                 } else {
                     pred.next = p.next;
                 }
-                --count;
+                //--count;
                 return;
             }
             pred = p;
@@ -110,7 +117,7 @@ public class Hashmap {
      * Retrieves the pokemon object mapped to the specified url
      * <p>
      * The method checks every Entry object and its next
-     * values in the Hashmap until it finds the Pokemon mapped to the url.
+     * values in the Cache until it finds the Pokemon mapped to the url.
      * It then returns that Pokemon object.
      *
      * @param  url  a unique url that is mapped to a specific object
