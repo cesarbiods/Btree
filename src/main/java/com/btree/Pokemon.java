@@ -67,6 +67,10 @@ public class Pokemon {
         return value;
     }
 
+    public void translateValue(int value) {
+
+    }
+
     public int getHeight() {
         return height;
     }

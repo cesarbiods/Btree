@@ -1,13 +1,15 @@
 package com.btree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 /**
  * Created by cesar on 4/9/17.
  */
 public class Cluster {
 
-    public List points;
+    public ArrayList<Pokemon> points;
+    public ArrayList<NorPokemon> normalized;
     public Pokemon centroid;
     public int id;
 
@@ -22,19 +24,19 @@ public class Cluster {
         return points;
     }
 
-    public void addPoint(Point point) {
+    public void addPoint(Pokemon point) {
         points.add(point);
     }
 
-    public void setPoints(List points) {
+    public void setPoints(ArrayList<Pokemon> points) {
         this.points = points;
     }
 
-    public Point getCentroid() {
+    public Pokemon getCentroid() {
         return centroid;
     }
 
-    public void setCentroid(Point centroid) {
+    public void setCentroid(Pokemon centroid) {
         this.centroid = centroid;
     }
 
@@ -46,11 +48,49 @@ public class Cluster {
         points.clear();
     }
 
+    public void NormalizeValues() {
+        int typeSum = 0;
+        int heightSum = 0;
+        int weightSum = 0;
+
+        for (Pokemon point: points) {
+            typeSum += point.getValue();
+            heightSum += point.getHeight();
+            weightSum += point.getWeight();
+        }
+
+        int typeMean = typeSum / points.size();
+        int heightMean = heightSum / points.size();
+        int weightMean = weightSum / points.size();
+
+        int sumType = 0;
+        int sumHeight = 0;
+        int sumWeight = 0;
+
+        for (Pokemon point: points) {
+            sumType += Math.pow(point.getValue() - typeMean, 2);
+            sumHeight += Math.pow(point.getHeight() - heightMean, 2);
+            sumWeight += Math.pow(point.getWeight() - weightMean, 2);
+        }
+
+        int typeSD = sumType / points.size();
+        int heightSD = sumHeight / points.size();
+        int weightSD = sumWeight / points.size();
+
+        for (Pokemon point: points) {
+            String name = point.getName();
+            int nType = (point.getValue() - typeMean) / typeSD;
+            int nHeight = (point.getHeight() - heightMean) / heightSD;
+            int nWeight = (point.getWeight() - weightMean) / weightSD;
+            normalized.add(new NorPokemon(name, nType, nHeight, nWeight));
+        }
+    }
+
     public void plotCluster() {
         System.out.println("[Cluster: " + id+"]");
         System.out.println("[Centroid: " + centroid + "]");
         System.out.println("[Points: \n");
-        for(Point p : points) {
+        for(Pokemon p : points) {
             System.out.println(p);
         }
         System.out.println("]");
