@@ -6,25 +6,20 @@ import java.io.FileNotFoundException;
  * Created by cesar on 3/5/17.
  */
 public class Cache {
-    int startingSize = 30;
-    Entry[] tab = new Entry[startingSize];
-    //int count = 0;
-    CacheRAF raf = new CacheRAF();
-    int[] counts = new int[startingSize];
+    private static Entry defaultEntry = new Entry(null, null, 0);
+    int startingSize = (int) Math.pow(2, 11);
 
     public Cache() throws FileNotFoundException {
     }
 
     static class Entry {
         final String url;
-        String path;
-        Entry next;
+        String json;
         int hash;
 
-        Entry(String k, String j, Entry n, int h) {
+        Entry(String k, String j, int h) {
             url = k;
-            path = j;
-            next = n;
+            json = j;
             hash = h;
         }
     }
@@ -42,14 +37,9 @@ public class Cache {
 
     public boolean contains(String url) {
         int h = url.hashCode();
-        Entry[] t = tab;
-        int i = h & (t.length - 1);
-        for (Entry e = t[i]; e != null; e = e.next) {
-            if (e.hash == h && url.equals(e.url)) {
-                return true;
-            }
-        }
-        return false;
+        int i = h & (startingSize - 1);
+
+        return CacheRAF.entryRead(i, url).isPresent();
     }
 
     /**
@@ -63,54 +53,13 @@ public class Cache {
      * and all the Entry objects are moved over to the new Cache
      *
      * @param  url  a unique url that is mapped to a specific object
-     * @param  path  a unique url that is mapped to a specific object
+     * @param  json  a unique url that is mapped to a specific object
      */
 
-    public void add(String url, String path) {
+    public void add(String url, String json) {
         int h = url.hashCode();
-        Entry[] t = tab;
-        int i = h & (tab.length) - 1;
-
-        for (Entry e = t[i]; e != null; e = e.next) {
-            if (e.hash == h && url.equals(e.url)) {
-                e.path = path;
-                //r.writeToFile();
-                return;
-            }
-        }
-
-        //check if full and evict
-    }
-
-    /**
-     * Removes a pokemon and its url from the Cache
-     * <p>
-     * The method checks every Entry object in the Cache until it finds it
-     * and removes it from the Cache. It also adjusts next values of the neighbors
-     * after a remove.
-     *
-     * @param  url  a unique url that is mapped to a specific object
-     */
-
-    public void remove(String url) {
-        int h = url.hashCode();
-        Entry[] t = tab;
-        int i = h & (t.length - 1);
-        Entry pred = null;
-        Entry p = t[i];
-        while (p != null) {
-            if (p.hash == h && url.equals(p.url)) {
-                if (pred == null) {
-                    t[i] = p.next;
-                } else {
-                    pred.next = p.next;
-                }
-                //--count;
-                return;
-            }
-            pred = p;
-            p = p.next;
-        }
+        int i = h & (startingSize - 1);
+        CacheRAF.entryWrite(new Entry(url, json, h), i);
     }
 
     /**
@@ -126,14 +75,8 @@ public class Cache {
 
     public String get(String url) {
         int h = url.hashCode();
-        Entry[] t = tab;
-        int i = h & (t.length - 1);
-        String found = "";
-        for (Entry e = t[i]; e != null; e = e.next) {
-            if (e.hash == h && url.equals(e.url)) {
-                found = e.path;
-            }
-        }
-        return found;
+        int i = h & (startingSize - 1);
+
+        return CacheRAF.entryRead(i, url).orElse(defaultEntry).json;
     }
 }

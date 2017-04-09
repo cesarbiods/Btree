@@ -7,7 +7,7 @@ import java.util.Optional;
  * Created by cesar on 3/23/17.
  */
 public class Tree {
-    static int order = 4;
+    static int order = 16;
     static int t = order / 2;
     Node root;
     long nNextPos = 0;
@@ -49,11 +49,11 @@ public class Tree {
     public Optional<Pokemon> search(Node n, int key) throws IOException {
         int i = 1;
         while (i <= n.nKeys && key > n.key[i - 1]) {
-            i = i++;
+            i++;
         }
 
         if (i <= n.nKeys && key == n.key[i - 1]) {
-            return Optional.of(n.pokes[key - 1]);
+            return Optional.of(n.pokes[i - 1]);
         } else if (n.isLeaf) {
             return Optional.empty();
         } else {

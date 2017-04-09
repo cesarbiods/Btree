@@ -14,8 +14,8 @@ public class TreeRAF {
     RandomAccessFile pRaf;
 
     public TreeRAF() throws FileNotFoundException {
-        tRaf = new RandomAccessFile("treeRaf", "rw");
-        pRaf = new RandomAccessFile("pokeRaf", "rw");
+        tRaf = new RandomAccessFile("rafs/tree/treeRaf", "rw");
+        pRaf = new RandomAccessFile("rafs/tree/pokeRaf", "rw");
     }
 
     public Tree.Node treeRead(int order,long position) throws IOException {
@@ -50,6 +50,7 @@ public class TreeRAF {
 
     public long treeWrite(Tree.Node data, long position) throws IOException {
         tRaf.seek(position);
+
         for (int i = 0; i < data.key.length; i ++) {
             tRaf.writeInt(data.key[i]);
         }
@@ -112,7 +113,8 @@ public class TreeRAF {
             mono.setName(type1);
             ComplexType a = new ComplexType();
             a.setType(mono);
-            mon.setType((List<ComplexType>) a);
+            List<ComplexType> types = Arrays.asList(a);
+            mon.setType(types);
         } else {
             Type a = new Type();
             Type b = new Type();
