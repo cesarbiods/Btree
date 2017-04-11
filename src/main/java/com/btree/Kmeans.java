@@ -3,109 +3,160 @@ package com.btree;
 /**
  * Created by cesar on 4/9/17.
  */
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import com.btree.Pokemon;
 
-public class KMeans {
+public class Kmeans {
 
     //Number of Clusters. 
     private int NUM_CLUSTERS = 3;
     //Number of Points
-    private int NUM_POINTS = 15;
+    private int NUM_POINTS = 25;
 
-    private ArrayList<Pokemon> points;
+    private ArrayList<Pokemon> primitives;
+    private ArrayList<NorPokemon> points;
     private ArrayList<Cluster> clusters;
 
-    public KMeans() {
+    public Kmeans() {
+        this.primitives = new ArrayList<>();
         this.points = new ArrayList();
         this.clusters = new ArrayList();
     }
 
-    public static void main(String[] args) {
+    public ArrayList<NorPokemon> normalizeValues(ArrayList<Pokemon> raw) {
+        int typeSum = 0;
+        int heightSum = 0;
+        int weightSum = 0;
 
-        KMeans kmeans = new KMeans();
-        kmeans.init();
-        kmeans.calculate();
+        for (Pokemon point: raw) {
+            typeSum += point.getValue();
+            heightSum += point.getHeight();
+            weightSum += point.getWeight();
+        }
+
+        int typeMean = typeSum / raw.size();
+        int heightMean = heightSum / raw.size();
+        int weightMean = weightSum / raw.size();
+
+        int sumType = 0;
+        int sumHeight = 0;
+        int sumWeight = 0;
+
+        for (Pokemon point: raw) {
+            sumType += Math.pow(point.getValue() - typeMean, 2);
+            sumHeight += Math.pow(point.getHeight() - heightMean, 2);
+            sumWeight += Math.pow(point.getWeight() - weightMean, 2);
+        }
+
+        int typeSD = sumType / raw.size();
+        int heightSD = sumHeight / raw.size();
+        int weightSD = sumWeight / raw.size();
+        ArrayList<NorPokemon> normal = new ArrayList<>();
+
+        for (Pokemon point: raw) {
+            String name = point.getName();
+            int nType = (point.getValue() - typeMean) / typeSD;
+            int nHeight = (point.getHeight() - heightMean) / heightSD;
+            int nWeight = (point.getWeight() - weightMean) / weightSD;
+            normal.add(new NorPokemon(name, nType, nHeight, nWeight));
+        }
+        return normal;
     }
 
-    //Initializes the process
-    public void init() {
-        //Create Points
-        Random r = new Random();
+    public void init(Tree t, int dexMax) {
+        ArrayList<NorPokemon> entire = new ArrayList<>();
+        try {
+            for (int i = 1; i < dexMax; i++) {
+                primitives.add(t.search(t.root, i).get());
+            }
+            entire = normalizeValues(primitives);
 
+            //Create Points
+            int[] randoms = new int[NUM_POINTS];
+            for (int i = 0; i < NUM_POINTS; i++) {
+                Random r = new Random();
+                randoms[i] = r.nextInt(dexMax);
+            }
+
+            for (int i = 0; i < NUM_POINTS; i++) {
+                points.add(entire.get(i));
+            }
+        } catch (IOException e) {
+                e.printStackTrace();
+        }
 
         //Create Clusters
         //Set Random Centroids
         for (int i = 1; i <= NUM_CLUSTERS; i++) {
             Cluster cluster = new Cluster(i);
-            Pokemon centroid = Pokemon.createRandomPoint(MIN_COORDINATE,MAX_COORDINATE);
+            Random r = new Random();
+            NorPokemon centroid = entire.get(r.nextInt(dexMax));
             cluster.setCentroid(centroid);
             clusters.add(cluster);
         }
 
-        //Print Initial state
         plotClusters();
     }
 
     private void plotClusters() {
         for (int i = 1; i <= NUM_CLUSTERS; i++) {
-            Cluster c = clusters.get(i);
+            Cluster c = clusters.get(i - 1);
             c.plotCluster();
         }
     }
 
-    //The process to calculate the K Means, with iterating method.
     public void calculate() {
         boolean finish = false;
         int iteration = 0;
 
         // Add in new data, one at a time, recalculating centroids with each new one.
-        while(!finish) {
-            //Clear cluster state
+        double distance = 0;
+        while (!finish) {
             clearClusters();
 
-            List lastCentroids = getCentroids();
+            ArrayList<NorPokemon> lastCentroids = getCentroids();
 
-            //Assign points to the closer cluster
             assignCluster();
 
-            //Calculate new centroids.
             calculateCentroids();
 
             iteration++;
 
-            List currentCentroids = getCentroids();
+            ArrayList<NorPokemon> currentCentroids = getCentroids();
 
-            //Calculates total distance between new and old Centroids
-            double distance = 0;
-            for(int i = 0; i &lt; lastCentroids.size(); i++) {
-                distance += Pokemon.distance(lastCentroids.get(i),currentCentroids.get(i));
+
+            for (int i = 0; i < lastCentroids.size(); i++) {
+                distance += lastCentroids.get(i).compare(currentCentroids.get(i));
             }
             System.out.println("#################");
             System.out.println("Iteration: " + iteration);
             System.out.println("Centroid distances: " + distance);
             plotClusters();
 
-            if(distance == 0) {
+            if (iteration == 10) {
                 finish = true;
             }
         }
+//        String data =
+//        return data;
     }
 
     private void clearClusters() {
-        for(Cluster cluster : clusters) {
+        for (Cluster cluster : clusters) {
             cluster.clear();
         }
     }
 
-    private List getCentroids() {
-        List centroids = new ArrayList(NUM_CLUSTERS);
-        for(Cluster cluster : clusters) {
-            Pokemon aux = cluster.getCentroid();
-            Pokemon point = new Pokemon(aux.getX(),aux.getY());
+    private ArrayList<NorPokemon> getCentroids() {
+        ArrayList<NorPokemon> centroids = new ArrayList(NUM_CLUSTERS);
+        for (Cluster cluster : clusters) {
+            NorPokemon aux = cluster.getCentroid();
+            NorPokemon point = new NorPokemon(aux.getName(), aux.getTypeValue(), aux.getHeight(), aux.getWeight());
             centroids.add(point);
         }
         return centroids;
@@ -113,43 +164,44 @@ public class KMeans {
 
     private void assignCluster() {
         double max = Double.MAX_VALUE;
-        double min = max;
         int cluster = 0;
         double distance = 0.0;
 
-        for(Pokemon point : points) {
-            min = max;
-            for(int i = 0; i &lt; NUM_CLUSTERS; i++) {
+        for (NorPokemon point : points) {
+            for (int i = 0; i < NUM_CLUSTERS; i++){
                 Cluster c = clusters.get(i);
-                distance = Pokemon.distance(point, c.getCentroid());
-                if(distance &lt; min){
-                    min = distance;
+                distance = point.compare(c.getCentroid());
+                if (distance < max){
+                    max = distance;
                     cluster = i;
                 }
             }
-            point.setCluster(cluster);
             clusters.get(cluster).addPoint(point);
         }
     }
 
     private void calculateCentroids() {
-        for(Cluster cluster : clusters) {
-            double sumX = 0;
-            double sumY = 0;
-            List list = cluster.getPoints();
+        for (Cluster cluster : clusters) {
+            int sumValue = 0;
+            int sumHeight = 0;
+            int sumWeight = 0;
+            ArrayList<NorPokemon> list = cluster.getPoints();
             int n_points = list.size();
 
-            for(Pokemon point : list) {
-                sumX += point.getX();
-                sumY += point.getY();
+            for (NorPokemon point : list) {
+                sumValue += point.getTypeValue();
+                sumHeight += point.getHeight();
+                sumWeight += point.getWeight();
             }
 
-            Pokemon centroid = cluster.getCentroid();
-            if(n_points &gt; 0) {
-                double newX = sumX / n_points;
-                double newY = sumY / n_points;
-                centroid.setX(newX);
-                centroid.setY(newY);
+            NorPokemon centroid = cluster.getCentroid();
+            if (n_points > 0){
+                int newValue = sumValue / n_points;
+                int newHeight = sumHeight / n_points;
+                int newWeight = sumWeight / n_points;
+                centroid.setTypeValue(newValue);
+                centroid.setHeight(newHeight);
+                centroid.setWeight(newWeight);
             }
         }
     }

@@ -47,4 +47,15 @@ public class NorPokemon {
         height = h;
         weight = w;
     }
+
+    public int compare(NorPokemon b) {
+        int wRatio = 1;
+        int hRatio = 100;
+        int tRatio = 10;
+        int result = 0;
+        result += Math.abs((this.getHeight() - b.getHeight()) * hRatio);
+        result += Math.abs((this.getWeight() - b.getWeight()) * wRatio);
+        result += Math.abs((this.getTypeValue() - b.getTypeValue()) * tRatio);
+        return Math.abs(result);
+    }
 }

@@ -7,7 +7,7 @@ import java.util.Optional;
  * Created by cesar on 3/23/17.
  */
 public class Tree {
-    static int order = 16;
+    static int order = 32;
     static int t = order / 2;
     Node root;
     long nNextPos = 0;
@@ -15,11 +15,15 @@ public class Tree {
     TreeRAF treeRaf = new TreeRAF();
 
     public Tree() throws IOException {
+    }
+
+    public void createTree() throws IOException {
         root = allocate();
         root.isLeaf = true;
         root.nKeys = 0;
         root.rafPosition = nNextPos;
         nNextPos = treeRaf.treeWrite(root, root.rafPosition);
+        treeRaf.saveRoot(root.rafPosition);
     }
 
     static class Node {
@@ -129,6 +133,7 @@ public class Tree {
             s.child[1 - 1] = r;
             s.ps[1 -1] = r.rafPosition;
             nNextPos = treeRaf.treeWrite(s, s.rafPosition);
+            treeRaf.saveRoot(s.rafPosition);
             splitChild(s, 1);
             insertNonfull(s, key, poke);
         } else {
@@ -167,5 +172,9 @@ public class Tree {
             }
             insertNonfull(x.child[i - 1], key, poke);
         }
+    }
+
+    public Node recreateTree() throws IOException {
+        return treeRaf.remake(order, treeRaf.getRoot());
     }
 }

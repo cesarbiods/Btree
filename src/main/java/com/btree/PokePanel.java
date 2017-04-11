@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 /**
  * Created by cesar on 2/23/17.
@@ -13,8 +14,23 @@ import java.awt.event.ActionListener;
 public class PokePanel extends JPanel{
     private JButton b;
     private JTextField t;
+    Tree tr;
+    Kmeans kmeans;
 
-    public PokePanel() {
+    public PokePanel() throws IOException {
+        tr = new Tree();
+        tr.root = tr.recreateTree();
+        kmeans = new Kmeans();
+        kmeans.init(tr, tr.order);
+
+        /**
+         * Var dexMax
+         * <p>
+         * This variable determines how many Pokemon are loaded onto
+         * the Cache at the start.
+         */
+
+        int dexMax = 25;
 
         /**
          * Gets the user input and displays the given Pokemon and a similar one
@@ -27,31 +43,50 @@ public class PokePanel extends JPanel{
          * information
          */
 
-//        b = new JButton("Search");
-//        t = new JTextField(10);
-//        b.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent event) {
-//                int min = Integer.MAX_VALUE;
-//                int minIndex = 0;
-//                for (int i = 1; i <= dexMax; i++) {
-//                    if (hashmap.contains(Integer.toString(i))) {
-//                        if (!Integer.toString(i).equals(t.getText())) {
-//                            int diff = hashmap.get(t.getText()).compare(hashmap.get(Integer.toString(i)));
-//                            if (diff < min) {
-//                                min = diff;
-//                                minIndex = i;
-//                            }
-//                        }
-//                    }
-//                }
-//                JOptionPane.showMessageDialog(PokePanel.this,
-//                        hashmap.get(t.getText()).toString() + "\n" +
-//                "Similar Pokemon: \n" + hashmap.get((Integer.toString(minIndex))).toString());
-//            }
-//        });
-//        add(b);
-//        add(t);
-//        t.setToolTipText("Please enter a dex number between 1-9");
+        b = new JButton("Search");
+        t = new JTextField(10);
+        b.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int min = Integer.MAX_VALUE;
+                int minIndex = 0;
+                for (int i = 1; i <= dexMax; i++) {
+                        if (!Integer.toString(i).equals(t.getText())) {
+                            int diff = 0;
+                            try {
+                                diff = tr.search(tr.root,Integer.parseInt(t.getText())).get().compare(tr.search(tr.root, i).get());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if (diff < min) {
+                                min = diff;
+                                minIndex = i;
+                            }
+                        }
+                }
+                try {
+                    JOptionPane.showMessageDialog(PokePanel.this,
+                            tr.search(tr.root, Integer.parseInt(t.getText())).get().toString() + "\n" +
+                    "Similar Pokemon: \n" + tr.search(tr.root, minIndex).get().toString() + "\n") ;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ;
+            }
+        });
+        add(b);
+        add(t);
+        t.setToolTipText("Please enter a dex number between 1-1442");
     }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                new GUI();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 }

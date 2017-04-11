@@ -9,7 +9,7 @@ import java.util.Optional;
  */
 public class CacheRAF {
     static String placeholder = "countRaf";
-    private static final double byteCap = Math.pow(2, 18);
+    private static final double byteCap = Math.pow(2, 23);
 
     private CacheRAF(String num) throws FileNotFoundException {
     }

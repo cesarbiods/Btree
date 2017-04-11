@@ -1,6 +1,8 @@
 package com.btree;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by cesar on 2/8/17.
@@ -83,6 +85,10 @@ public class Pokemon {
         this.name = name;
     }
 
+    public List<ComplexType> getList() {
+        return types;
+    }
+
     public void setType(List<ComplexType> type) {
         this.types = type;
     }
@@ -129,5 +135,49 @@ public class Pokemon {
         result += Math.abs((this.getWeight() - b.getWeight()) * wRatio);
         result += Math.abs((this.getValue() - b.getValue()) * tRatio);
         return Math.abs(result);
+    }
+
+    public ArrayList<ComplexType> mergeTypes(Pokemon b) {
+        ArrayList<ComplexType> nType = new ArrayList<>();
+
+        if (this.getList().size() == 1) {
+            if (b.getList().size() == 1) {
+                nType.add(this.getList().get(0));
+                nType.add(b.getList().get(0));
+            } else {
+                if (b.getList().get(0).getType().getName().equals(this.getList().get(0).getType().getName())) {
+                    nType.add(this.getList().get(0));
+                    nType.add(b.getList().get(1));
+                } else {
+                    nType.add(this.getList().get(0));
+                    nType.add(b.getList().get(0));
+                }
+            }
+        } else {
+            if (b.getList().size() == 1) {
+                if (b.getList().get(0).getType().getName().equals(this.getList().get(0).getType().getName())) {
+                    nType.add(this.getList().get(1));
+                    nType.add(b.getList().get(0));
+                } else {
+                    nType.add(this.getList().get(0));
+                    nType.add(b.getList().get(0));
+                }
+            } else {
+                if (!b.getList().get(0).getType().getName().equals(this.getList().get(0).getType().getName())) {
+                    nType.add(this.getList().get(0));
+                    nType.add(b.getList().get(0));
+                } else if (!b.getList().get(1).getType().getName().equals(this.getList().get(0).getType().getName())) {
+                    nType.add(this.getList().get(0));
+                    nType.add(b.getList().get(1));
+                } else if (!b.getList().get(0).getType().getName().equals(this.getList().get(1).getType().getName())) {
+                    nType.add(this.getList().get(1));
+                    nType.add(b.getList().get(0));
+                } else {
+                    nType.add(this.getList().get(1));
+                    nType.add(b.getList().get(1));
+                }
+            }
+        }
+        return nType;
     }
 }

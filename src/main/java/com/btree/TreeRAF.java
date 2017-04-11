@@ -12,10 +12,22 @@ import java.util.List;
 public class TreeRAF {
     RandomAccessFile tRaf;
     RandomAccessFile pRaf;
+    RandomAccessFile eRaf;
 
     public TreeRAF() throws FileNotFoundException {
         tRaf = new RandomAccessFile("rafs/tree/treeRaf", "rw");
         pRaf = new RandomAccessFile("rafs/tree/pokeRaf", "rw");
+        eRaf = new RandomAccessFile("rafs/tree/extraRaf", "rw");
+    }
+
+    public void saveRoot(long position) throws IOException {
+        eRaf.seek(0);
+        eRaf.writeLong(position);
+    }
+
+    public long getRoot() throws IOException {
+        eRaf.seek(0);
+        return eRaf.readLong();
     }
 
     public Tree.Node treeRead(int order,long position) throws IOException {
@@ -131,5 +143,42 @@ public class TreeRAF {
         mon.setWeight(pRaf.readInt());
         mon.setRafPosition(position);
         return mon;
+    }
+
+    public Tree.Node remake(int order,long position) throws IOException {
+        Tree.Node n = new Tree.Node();
+        n.key = new int[order - 1];
+        n.child = new Tree.Node[order];
+        n.ps = new long[order];
+        n.pokes = new Pokemon[order - 1];
+        n.pps = new long[order - 1];
+
+        tRaf.seek(position);
+        for (int i = 0; i < n.key.length; i ++) {
+            n.key[i] = tRaf.readInt();
+        }
+        for (int i = 0; i < n.ps.length; i++) {
+            n.ps[i] = tRaf.readLong();
+        }
+        n.nKeys = tRaf.readInt();
+        n.isLeaf = tRaf.readBoolean();
+        for (int i = 0; i < n.pps.length; i++) {
+            n.pps[i] = tRaf.readLong();
+        }
+        n.rafPosition = position;
+
+        for (int i = 0; i < n.nKeys; i++) {
+            n.pokes[i] = pokemonRead(n.pps[i]);
+        }
+
+        if (!n.isLeaf) {
+            for (int i = 0; i < n.nKeys + 1; i++) {
+                n.child[i] = remake(order, n.ps[i]);
+//                for (int j = 0; j < n.child[i].nKeys; j++) {
+//                    n.child[i].pokes[j] = pokemonRead(n.child[i].pps[j]);
+//                }
+            }
+        }
+        return n;
     }
 }
