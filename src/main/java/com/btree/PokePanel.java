@@ -21,7 +21,8 @@ public class PokePanel extends JPanel{
         tr = new Tree();
         tr.root = tr.recreateTree();
         kmeans = new Kmeans();
-        kmeans.init(tr, tr.order);
+        kmeans.init(tr, 721);
+        kmeans.calculate();
 
         /**
          * Var dexMax
@@ -30,7 +31,7 @@ public class PokePanel extends JPanel{
          * the Cache at the start.
          */
 
-        int dexMax = 25;
+        int dexMax = 721;
 
         /**
          * Gets the user input and displays the given Pokemon and a similar one
@@ -67,7 +68,7 @@ public class PokePanel extends JPanel{
                 try {
                     JOptionPane.showMessageDialog(PokePanel.this,
                             tr.search(tr.root, Integer.parseInt(t.getText())).get().toString() + "\n" +
-                    "Similar Pokemon: \n" + tr.search(tr.root, minIndex).get().toString() + "\n") ;
+                    "Similar Pokemon: \n" + tr.search(tr.root, minIndex).get().toString() + "\n" + kmeans.plotClusters()) ;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

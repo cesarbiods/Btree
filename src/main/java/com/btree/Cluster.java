@@ -14,7 +14,7 @@ public class Cluster {
 
     //Creates a new Cluster
     public Cluster(int i) {
-        this.normalized = new ArrayList<>();
+        this.normalized = new ArrayList<>(1442);
         this.centroid = null;
         id = i;
     }
@@ -43,13 +43,12 @@ public class Cluster {
         normalized.clear();
     }
 
-    public void plotCluster() {
-        System.out.println("[Centroid: " + centroid + "]");
-        System.out.println("[Points: \n");
-        for(NorPokemon p : normalized) {
-            System.out.println(p);
+    public String getMembers() {
+        String members = "";
+        for (int i = 0; i < 5; i++) {
+            members += normalized.get(i).index + " ";
         }
-        System.out.println("]");
+        return members.trim();
     }
 
 }

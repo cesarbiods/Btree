@@ -4,10 +4,11 @@ package com.btree;
  * Created by cesar on 4/9/17.
  */
 public class NorPokemon {
+    public int index;
     private String name;
-    public int typeValue;
-    private int height;
-    private int weight;
+    public double typeValue;
+    private double height;
+    private double weight;
 
     public String getName() {
         return name;
@@ -17,38 +18,39 @@ public class NorPokemon {
         this.name = name;
     }
 
-    public int getTypeValue() {
+    public double getTypeValue() {
         return typeValue;
     }
 
-    public void setTypeValue(int typeValue) {
+    public void setTypeValue(double typeValue) {
         this.typeValue = typeValue;
     }
 
-    public int getHeight() {
+    public double getHeight() {
         return height;
     }
 
-    public void setHeight(int height) {
+    public void setHeight(double height) {
         this.height = height;
     }
 
-    public int getWeight() {
+    public double getWeight() {
         return weight;
     }
 
-    public void setWeight(int weight) {
+    public void setWeight(double weight) {
         this.weight = weight;
     }
 
-    public NorPokemon(String n, int t, int h, int w) {
+    public NorPokemon(String n, double t, double h, double w, int i) {
         name = n;
         typeValue = t;
         height = h;
         weight = w;
+        index = i;
     }
 
-    public int compare(NorPokemon b) {
+    public double compare(NorPokemon b) {
         int wRatio = 1;
         int hRatio = 100;
         int tRatio = 10;
